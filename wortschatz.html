@@ -316,9 +316,10 @@ function viewAdd() {
     <button class="back-btn" onclick="nav('home');clearAdd()">← Back</button>
     <h2 class="view-title">Add New Word</h2>
     <div class="input-row">
-      <input class="word-input" id="wordInput" placeholder="Type a German word…" value="${esc(state.input)}"
-        oninput="state.input=this.value" onkeydown="if(event.key==='Enter'&&state.input.trim())fetchWordData(state.input)"/>
-      <button class="btn-primary" onclick="fetchWordData(state.input)" ${!state.input.trim()||state.loading?'disabled':''}>
+      <input class="word-input" id="wordInput" placeholder="Type a German word…"
+        oninput="state.input=this.value;document.getElementById('lookupBtn').disabled=!this.value.trim()"
+        onkeydown="if(event.key==='Enter'&&this.value.trim())fetchWordData(this.value)"/>
+      <button class="btn-primary" id="lookupBtn" onclick="fetchWordData(document.getElementById('wordInput').value)" disabled>
         ${state.loading?'<span class="spinner"></span>':'Look Up'}
       </button>
     </div>
