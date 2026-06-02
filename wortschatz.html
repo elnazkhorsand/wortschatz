@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Wortschatz — German Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e2a;
+  --surface:#1e2233;--surface2:#252940;--border:#2a2f45;
+  --text:#e8eaf0;--text2:#8a90a8;--text3:#565c78;
+  --accent:#c8a96e;--accent2:#e8c98e;--gold:#c8a96e;
+  --green:#4ade80;--red:#f87171;--radius:14px;
+  --serif:'Crimson Pro',Georgia,serif;
+  --mono:'DM Mono',monospace;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--serif);min-height:100vh;-webkit-tap-highlight-color:transparent}
+#app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);padding:0}
+.view{padding:28px 20px 60px;min-height:100vh;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* API KEY SCREEN */
+.apikey-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;text-align:center}
+.apikey-icon{font-size:48px;margin-bottom:16px}
+.apikey-title{font-size:32px;font-weight:300;color:var(--accent2);margin-bottom:8px;letter-spacing:.06em}
+.apikey-sub{font-size:14px;color:var(--text3);font-family:var(--mono);margin-bottom:32px;line-height:1.6}
+.apikey-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:14px;font-family:var(--mono);color:var(--text);outline:none;margin-bottom:12px;letter-spacing:.04em}
+.apikey-input:focus{border-color:var(--gold)}
+.apikey-input::placeholder{color:var(--text3)}
+.apikey-hint{font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:20px;line-height:1.5}
+.apikey-hint a{color:var(--accent);text-decoration:none}
+.apikey-hint a:hover{text-decoration:underline}
+
+/* HOME */
+.home-hero{text-align:center;padding:48px 0 36px}
+.hero-icon{font-size:52px;margin-bottom:12px}
+.app-title{font-size:42px;font-weight:300;letter-spacing:.08em;color:var(--accent2);margin-bottom:6px}
+.app-subtitle{color:var(--text3);font-size:15px;letter-spacing:.12em;font-family:var(--mono);font-weight:300}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 10px;text-align:center}
+.stat-card.accent{border-color:var(--gold);background:#1e1a0f}
+.stat-num{display:block;font-size:28px;font-weight:600;color:var(--accent2);font-family:var(--mono)}
+.stat-label{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:.06em;margin-top:2px;display:block}
+.home-actions{display:flex;flex-direction:column;gap:10px}
+.settings-link{text-align:center;margin-top:16px;font-size:12px;color:var(--text3);font-family:var(--mono);cursor:pointer;letter-spacing:.06em}
+.settings-link:hover{color:var(--accent)}
+
+/* BUTTONS */
+.btn-primary{background:linear-gradient(135deg,#b8935e,#d4aa78);color:#0d0f14;border:none;border-radius:10px;padding:15px 24px;font-size:15px;font-family:var(--mono);font-weight:500;cursor:pointer;letter-spacing:.04em;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 24px rgba(200,169,110,.35)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:14px 24px;font-size:15px;font-family:var(--mono);cursor:pointer;letter-spacing:.04em;transition:all .2s;width:100%}
+.btn-secondary:hover{border-color:var(--gold);color:var(--accent2)}
+.btn-ghost{background:transparent;color:var(--text2);border:none;padding:12px;font-size:14px;font-family:var(--mono);cursor:pointer;text-align:center;transition:color .2s;width:100%}
+.btn-ghost:hover{color:var(--accent2)}
+.back-btn{background:none;border:none;color:var(--text2);font-size:14px;font-family:var(--mono);cursor:pointer;padding:0 0 20px;display:block;transition:color .2s}
+.back-btn:hover{color:var(--accent2)}
+.view-title{font-size:26px;font-weight:300;color:var(--accent2);letter-spacing:.05em;margin-bottom:20px}
+
+/* ADD VIEW */
+.input-row{display:flex;gap:10px;margin-bottom:12px}
+.input-row .btn-primary{width:auto;padding:14px 20px;white-space:nowrap;flex-shrink:0}
+.word-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:18px;font-family:var(--serif);color:var(--text);outline:none;transition:border-color .2s;min-width:0}
+.word-input:focus{border-color:var(--gold)}
+.word-input::placeholder{color:var(--text3)}
+.error-msg{color:var(--red);font-size:13px;font-family:var(--mono);margin-bottom:12px}
+
+/* CARD */
+.word-type-badge{display:inline-block;background:var(--bg3);border:1px solid var(--border);color:var(--text3);font-size:11px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:4px;margin-bottom:4px}
+.article{color:var(--gold)}
+.article-sm{color:var(--gold)}
+.preview-card,.modal-inner{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:8px}
+.preview-header,.modal-header{background:var(--bg3);border-bottom:1px solid var(--border);padding:20px}
+.preview-word,.modal-word{font-size:30px;font-weight:300;color:var(--accent2);margin:6px 0 4px}
+.preview-plural,.modal-plural{color:var(--text2);font-size:14px;font-family:var(--mono)}
+.meaning-row{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border)}
+.meaning-row.rtl{direction:rtl}
+.lang-flag{font-size:18px;flex-shrink:0}
+.meaning-en{font-size:17px;color:var(--text)}
+.meaning-fa{font-size:18px;color:var(--text);font-family:'Tahoma','Segoe UI',sans-serif}
+.conj-block{padding:16px 20px;border-bottom:1px solid var(--border)}
+.section-label{font-size:11px;font-family:var(--mono);letter-spacing:.12em;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+.conj-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.conj-row{display:flex;gap:8px;align-items:baseline}
+.pronoun{font-size:12px;color:var(--text3);font-family:var(--mono);min-width:70px}
+.conj-form{font-size:15px;color:var(--accent2)}
+.example-block{padding:16px 20px;border-bottom:1px solid var(--border)}
+.example-de{font-size:16px;font-style:italic;color:var(--text);margin-bottom:6px}
+.example-en{font-size:13px;color:var(--text3)}
+.add-btn-wrap{padding:16px 20px}
+.level-pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-family:var(--mono);letter-spacing:.06em;color:#000;font-weight:500;margin-top:8px}
+
+/* REVIEW */
+.review-header{display:flex;justify-content:space-between;align-items:center;padding:16px 0 12px}
+.review-progress{font-family:var(--mono);font-size:13px;color:var(--text2)}
+.progress-bar{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden;margin-bottom:28px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--accent2));transition:width .4s ease}
+.flashcard{background:var(--surface);border:1px solid var(--border);border-radius:18px;min-height:340px;padding:28px 24px;cursor:pointer;transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column;justify-content:flex-start;gap:12px;margin-bottom:20px;user-select:none}
+.flashcard:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.flash-word{font-size:38px;font-weight:300;color:var(--accent2);letter-spacing:.02em}
+.flash-plural{font-size:15px;color:var(--text2);font-family:var(--mono)}
+.tap-hint{margin-top:auto;font-size:12px;color:var(--text3);font-family:var(--mono);letter-spacing:.1em;text-align:center;padding-top:20px}
+.grade-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.grade-btn{border:none;border-radius:12px;padding:16px;font-size:15px;font-family:var(--mono);cursor:pointer;font-weight:500;transition:all .2s;letter-spacing:.04em}
+.grade-btn.wrong{background:#2a1414;color:var(--red);border:1px solid #4a2020}
+.grade-btn.wrong:hover{background:#3a1a1a}
+.grade-btn.correct{background:#0f2a1a;color:var(--green);border:1px solid #1a4a2a}
+.grade-btn.correct:hover{background:#143520}
+.level-indicator{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--text3);font-family:var(--mono)}
+.level-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;display:inline-block}
+.level-dot.sm{width:8px;height:8px}
+
+/* BROWSE */
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:15px;font-family:var(--serif);color:var(--text);outline:none;margin-bottom:16px;transition:border-color .2s}
+.search-input:focus{border-color:var(--gold)}
+.search-input::placeholder{color:var(--text3)}
+.card-list{display:flex;flex-direction:column;gap:6px}
+.card-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .15s}
+.card-row:hover{border-color:var(--gold);background:var(--surface2)}
+.card-row-left{display:flex;align-items:center;gap:12px}
+.card-row-word{font-size:17px;color:var(--accent2);display:block}
+.card-row-meaning{font-size:12px;color:var(--text3);font-family:var(--mono);display:block;margin-top:1px}
+.card-row-right{text-align:right}
+.card-row-type{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:.08em;display:block;text-transform:uppercase}
+.card-row-due{font-size:11px;font-family:var(--mono);display:block;margin-top:2px;color:var(--text3)}
+.empty-msg{color:var(--text3);font-family:var(--mono);text-align:center;padding:40px 0}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);display:flex;align-items:flex-end;z-index:100;animation:fadeIn .2s ease}
+.modal-sheet{width:100%;max-width:480px;margin:0 auto;background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;max-height:88vh;overflow-y:auto;animation:slideUp .25s ease;position:relative}
+.modal-close{position:absolute;top:16px;right:16px;background:var(--surface2);border:none;color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;z-index:1}
+.meta-row{display:flex;justify-content:space-between;padding:12px 20px;font-size:12px;color:var(--text3);font-family:var(--mono);border-bottom:1px solid var(--border)}
+.delete-btn{margin:16px 20px;background:#2a1414;color:var(--red);border:1px solid #4a2020;border-radius:10px;padding:12px 20px;font-family:var(--mono);font-size:13px;cursor:pointer;width:calc(100% - 40px);transition:all .2s}
+.delete-btn:hover{background:#3a1a1a}
+.modal-body-pad{padding-bottom:24px}
+
+.spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;display:inline-block;animation:spin .7s linear infinite}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const STORAGE_KEY = 'wortschatz_v1';
+const API_KEY_STORAGE = 'wortschatz_apikey';
+const INTERVALS = [0,1,3,7,14,30];
+const LEVEL_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6'];
+const LEVEL_LABELS = ['New','Beginner','Familiar','Learned','Known','Mastered'];
+
+const SYSTEM_PROMPT = `You are a German language expert. When given a German word, respond ONLY with a valid JSON object (no markdown, no backticks) with these exact fields:
+{"word":"the word as given","type":"noun|verb|adjective|adverb|preposition|conjunction|pronoun|other","article":"der|die|das or null","plural":"plural with article e.g. die Häuser or null","conjugation":{"ich":"...","du":"...","er/sie/es":"...","wir":"...","ihr":"...","sie/Sie":"..."} or null,"meaning_en":"English translation","meaning_fa":"Persian translation in Farsi script","example":"natural German example sentence","example_en":"English translation of example"}`;
+
+// ── State ──────────────────────────────────────────────────────────────────
+let state = {
+  view: 'home',       // apikey | home | add | review | browse | card
+  cards: [],
+  apiKey: '',
+  input: '',
+  loading: false,
+  error: '',
+  preview: null,
+  reviewQueue: [],
+  reviewIndex: 0,
+  flipped: false,
+  selectedCard: null,
+  searchTerm: '',
+};
+
+function loadData() {
+  try { state.cards = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { state.cards = []; }
+  state.apiKey = localStorage.getItem(API_KEY_STORAGE) || '';
+  state.view = state.apiKey ? 'home' : 'apikey';
+}
+
+function saveCards() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.cards)); }
+
+function today() { return new Date().toISOString().split('T')[0]; }
+function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate()+days); return d.toISOString().split('T')[0]; }
+function dueCards() { return state.cards.filter(c => c.nextReview <= today()); }
+function levelColor(l) { return LEVEL_COLORS[l] || LEVEL_COLORS[0]; }
+function levelLabel(l) { return LEVEL_LABELS[l] || 'New'; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── API ────────────────────────────────────────────────────────────────────
+async function fetchWordData(word) {
+  state.loading = true; state.error = ''; state.preview = null; render();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': state.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: word.trim() }],
+      }),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e?.error?.message || 'HTTP ' + res.status);
+    }
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = (data.content||[]).map(b=>b.text||'').join('');
+    const clean = text.replace(/```json[\s\S]*?```|```/g,'').trim();
+    state.preview = JSON.parse(clean);
+  } catch(e) {
+    state.error = 'Error: ' + e.message;
+  }
+  state.loading = false; render();
+}
+
+// ── Actions ────────────────────────────────────────────────────────────────
+function saveApiKey(key) {
+  state.apiKey = key.trim();
+  localStorage.setItem(API_KEY_STORAGE, state.apiKey);
+  state.view = 'home'; render();
+}
+
+function addCard() {
+  if (!state.preview) return;
+  if (state.cards.find(c => c.word.toLowerCase() === state.preview.word.toLowerCase())) {
+    state.error = 'This word is already in your deck.'; render(); return;
+  }
+  state.cards.unshift({ id: Date.now(), ...state.preview, level: 0, nextReview: today(), addedAt: today() });
+  saveCards();
+  state.preview = null; state.input = ''; state.view = 'home'; render();
+}
+
+function startReview() {
+  state.reviewQueue = [...dueCards()].sort(()=>Math.random()-.5);
+  state.reviewIndex = 0; state.flipped = false; state.view = 'review'; render();
+}
+
+function gradeCard(correct) {
+  const card = state.reviewQueue[state.reviewIndex];
+  const newLevel = correct ? Math.min(card.level+1,5) : 0;
+  const interval = INTERVALS[newLevel];
+  const nextReview = interval === 0 ? today() : addDays(today(), interval);
+  state.cards = state.cards.map(c => c.id===card.id ? {...c, level:newLevel, nextReview} : c);
+  saveCards();
+  if (state.reviewIndex+1 < state.reviewQueue.length) {
+    state.reviewIndex++; state.flipped = false;
+  } else {
+    state.view = 'home';
+  }
+  render();
+}
+
+function deleteCard(id) {
+  state.cards = state.cards.filter(c=>c.id!==id);
+  saveCards();
+  state.selectedCard = null; state.view = 'browse'; render();
+}
+
+// ── Render helpers ────────────────────────────────────────────────────────
+function renderConjugation(conj) {
+  if (!conj) return '';
+  return `<div class="conj-block">
+    <p class="section-label">Present Tense</p>
+    <div class="conj-grid">
+      ${Object.entries(conj).map(([p,f])=>`
+        <div class="conj-row">
+          <span class="pronoun">${esc(p)}</span>
+          <span class="conj-form">${esc(f)}</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderCardPreview(card, showAddBtn) {
+  return `
+    <div class="preview-card">
+      <div class="preview-header">
+        <span class="word-type-badge">${esc(card.type)}</span>
+        <h3 class="preview-word">${card.article?`<span class="article">${esc(card.article)} </span>`:''}${esc(card.word)}</h3>
+        ${card.plural?`<p class="preview-plural">Plural: ${esc(card.plural)}</p>`:''}
+      </div>
+      <div class="meaning-row"><span class="lang-flag">🇬🇧</span><span class="meaning-en">${esc(card.meaning_en)}</span></div>
+      <div class="meaning-row rtl"><span class="lang-flag">🇮🇷</span><span class="meaning-fa">${esc(card.meaning_fa)}</span></div>
+      ${renderConjugation(card.conjugation)}
+      <div class="example-block">
+        <p class="section-label">Example</p>
+        <p class="example-de">${esc(card.example)}</p>
+        <p class="example-en">${esc(card.example_en)}</p>
+      </div>
+      ${showAddBtn?`<div class="add-btn-wrap"><button class="btn-primary" onclick="addCard()">Add to Deck</button></div>`:''}
+    </div>`;
+}
+
+// ── Views ─────────────────────────────────────────────────────────────────
+function viewApiKey() {
+  return `<div class="apikey-screen">
+    <div class="apikey-icon">🔑</div>
+    <h1 class="apikey-title">Wortschatz</h1>
+    <p class="apikey-sub">Enter your Anthropic API key to get started.<br>It's stored only in your browser.</p>
+    <input class="apikey-input" id="apikeyInput" type="password" placeholder="sk-ant-..." autocomplete="off" spellcheck="false"/>
+    <p class="apikey-hint">Get your key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
+    <button class="btn-primary" onclick="handleSaveKey()">Continue →</button>
+  </div>`;
+}
+
+function viewHome() {
+  const due = dueCards();
+  const mastered = state.cards.filter(c=>c.level>=4).length;
+  return `<div class="view home-view">
+    <div class="home-hero">
+      <div class="hero-icon">🇩🇪</div>
+      <h1 class="app-title">Wortschatz</h1>
+      <p class="app-subtitle">German Vocabulary, Mastered.</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><span class="stat-num">${state.cards.length}</span><span class="stat-label">Total</span></div>
+      <div class="stat-card accent"><span class="stat-num">${due.length}</span><span class="stat-label">Due Today</span></div>
+      <div class="stat-card"><span class="stat-num">${mastered}</span><span class="stat-label">Mastered</span></div>
+    </div>
+    <div class="home-actions">
+      <button class="btn-primary" ${due.length===0?'disabled':''} onclick="startReview()">
+        ${due.length>0?`Review ${due.length} Card${due.length>1?'s':''}` : 'No Cards Due'}
+      </button>
+      <button class="btn-secondary" onclick="nav('add')">+ Add Word</button>
+      <button class="btn-ghost" onclick="nav('browse')">Browse Deck (${state.cards.length})</button>
+    </div>
+    <p class="settings-link" onclick="nav('apikey')">⚙ Change API Key</p>
+  </div>`;
+}
+
+function viewAdd() {
+  return `<div class="view add-view">
+    <button class="back-btn" onclick="nav('home');clearAdd()">← Back</button>
+    <h2 class="view-title">Add New Word</h2>
+    <div class="input-row">
+      <input class="word-input" id="wordInput" placeholder="Type a German word…" value="${esc(state.input)}" 
+        oninput="state.input=this.value" onkeydown="if(event.key==='Enter'&&state.input.trim())fetchWordData(state.input)"/>
+      <button class="btn-primary" onclick="fetchWordData(state.input)" ${!state.input.trim()||state.loading?'disabled':''}>
+        ${state.loading?'<span class="spinner"></span>':'Look Up'}
+      </button>
+    </div>
+    ${state.error?`<p class="error-msg">${esc(state.error)}</p>`:''}
+    ${state.preview ? renderCardPreview(state.preview, true) : ''}
+  </div>`;
+}
+
+function viewReview() {
+  const card = state.reviewQueue[state.reviewIndex];
+  if (!card) { state.view='home'; return viewHome(); }
+  const pct = (state.reviewIndex/state.reviewQueue.length)*100;
+  return `<div class="view review-view">
+    <div class="review-header">
+      <button class="back-btn" style="padding:0" onclick="nav('home')">✕</button>
+      <span class="review-progress">${state.reviewIndex+1} / ${state.reviewQueue.length}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="flashcard" onclick="flipCard()">
+      <span class="word-type-badge">${esc(card.type)}</span>
+      <h2 class="flash-word">${card.article?`<span class="article">${esc(card.article)} </span>`:''}${esc(card.word)}</h2>
+      ${card.plural?`<p class="flash-plural">Plural: ${esc(card.plural)}</p>`:''}
+      ${!state.flipped ? `<p class="tap-hint">Tap to reveal</p>` : `
+        <div class="meaning-row" style="padding:8px 0;border:none"><span class="lang-flag">🇬🇧</span><span class="meaning-en">${esc(card.meaning_en)}</span></div>
+        <div class="meaning-row rtl" style="padding:4px 0;border:none"><span class="lang-flag">🇮🇷</span><span class="meaning-fa">${esc(card.meaning_fa)}</span></div>
+        ${card.conjugation?`<div class="conj-block" style="padding:8px 0;border:none">
+          <div class="conj-grid">${Object.entries(card.conjugation).map(([p,f])=>`<div class="conj-row"><span class="pronoun">${esc(p)}</span><span class="conj-form">${esc(f)}</span></div>`).join('')}</div>
+        </div>`:''}
+        <p class="example-de" style="font-size:14px;padding-top:4px">${esc(card.example)}</p>
+      `}
+    </div>
+    ${state.flipped?`<div class="grade-row">
+      <button class="grade-btn wrong" onclick="gradeCard(false)">✗ Again</button>
+      <button class="grade-btn correct" onclick="gradeCard(true)">✓ Got it</button>
+    </div>`:''}
+    <div class="level-indicator">
+      <span class="level-dot" style="background:${levelColor(card.level)}"></span>
+      Level ${card.level} · ${levelLabel(card.level)}
+    </div>
+  </div>`;
+}
+
+function viewBrowse() {
+  const term = state.searchTerm.toLowerCase();
+  const filtered = state.cards.filter(c =>
+    c.word.toLowerCase().includes(term) || c.meaning_en.toLowerCase().includes(term)
+  );
+  return `<div class="view browse-view">
+    <button class="back-btn" onclick="nav('home')">← Back</button>
+    <h2 class="view-title">Your Deck</h2>
+    <input class="search-input" placeholder="Search words…" value="${esc(state.searchTerm)}"
+      oninput="state.searchTerm=this.value;render()"/>
+    <div class="card-list">
+      ${filtered.length===0?`<p class="empty-msg">No words found.</p>`:''}
+      ${filtered.map(card=>`
+        <div class="card-row" onclick="openCard(${card.id})">
+          <div class="card-row-left">
+            <span class="level-dot sm" style="background:${levelColor(card.level)}"></span>
+            <div>
+              <span class="card-row-word">${card.article?`<span class="article-sm">${esc(card.article)} </span>`:''}${esc(card.word)}</span>
+              <span class="card-row-meaning">${esc(card.meaning_en)}</span>
+            </div>
+          </div>
+          <div class="card-row-right">
+            <span class="card-row-type">${esc(card.type)}</span>
+            <span class="card-row-due">${card.nextReview<=today()?'Due':card.nextReview}</span>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function viewCard() {
+  const card = state.selectedCard;
+  if (!card) return viewBrowse();
+  return `<div class="view">
+    <button class="back-btn" onclick="nav('browse')">← Back</button>
+    <div class="modal-inner">
+      <div class="modal-header" style="position:relative">
+        <span class="word-type-badge">${esc(card.type)}</span>
+        <h2 class="modal-word">${card.article?`<span class="article">${esc(card.article)} </span>`:''}${esc(card.word)}</h2>
+        ${card.plural?`<p class="modal-plural">Plural: ${esc(card.plural)}</p>`:''}
+        <div class="level-pill" style="background:${levelColor(card.level)}">Level ${card.level} · ${levelLabel(card.level)}</div>
+      </div>
+      <div class="meaning-row"><span class="lang-flag">🇬🇧</span><span class="meaning-en">${esc(card.meaning_en)}</span></div>
+      <div class="meaning-row rtl"><span class="lang-flag">🇮🇷</span><span class="meaning-fa">${esc(card.meaning_fa)}</span></div>
+      ${renderConjugation(card.conjugation)}
+      <div class="example-block">
+        <p class="section-label">Example</p>
+        <p class="example-de">${esc(card.example)}</p>
+        <p class="example-en">${esc(card.example_en)}</p>
+      </div>
+      <div class="meta-row">
+        <span>Next review: ${card.nextReview}</span>
+        <span>Added: ${card.addedAt}</span>
+      </div>
+    </div>
+    <button class="delete-btn" style="margin-top:12px" onclick="deleteCard(${card.id})">Delete Card</button>
+  </div>`;
+}
+
+// ── Navigation helpers ────────────────────────────────────────────────────
+function nav(v) { state.view=v; state.error=''; render(); }
+function clearAdd() { state.preview=null; state.input=''; state.error=''; }
+function flipCard() { if(!state.flipped){state.flipped=true;render();} }
+function openCard(id) { state.selectedCard=state.cards.find(c=>c.id===id)||null; state.view='card'; render(); }
+function handleSaveKey() {
+  const val = document.getElementById('apikeyInput')?.value?.trim();
+  if (val) saveApiKey(val);
+}
+
+// ── Main render ───────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById('app');
+  const views = {
+    apikey: viewApiKey,
+    home: viewHome,
+    add: viewAdd,
+    review: viewReview,
+    browse: viewBrowse,
+    card: viewCard,
+  };
+  app.innerHTML = (views[state.view] || viewHome)();
+  // restore focus for word input
+  if (state.view==='add') {
+    const inp = document.getElementById('wordInput');
+    if (inp && !state.preview && !state.loading) inp.focus();
+  }
+}
+
+loadData();
+render();
+</script>
+</body>
+</html>
